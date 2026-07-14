@@ -1,0 +1,31 @@
+services:
+  # ── FastAPI Backend (Python) ──────────────────────────────────────────────
+  - type: web
+    name: creatoros-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: GROQ_API_KEY
+        sync: false # User will provide this in the Render dashboard
+
+  # ── Next.js Frontend (Node.js) ─────────────────────────────────────────────
+  - type: web
+    name: creatoros-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: creatoros-backend
+          type: web
+          property: host
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false # User will provide this in the Render dashboard
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false # User will provide this in the Render dashboard
