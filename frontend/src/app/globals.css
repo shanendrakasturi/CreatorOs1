@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #155CBE;
+  --color-primary-hover: #1c6ad6;
+  --color-primary-container: rgba(21, 92, 190, 0.1);
+  
+  --color-background: #0A0A0A;
+  --color-surface-dim: #131313;
+  --color-surface-card: #141414;
+  --color-surface-container: #201f1f;
+  --color-surface-container-high: #2a2a2a;
+  --color-surface-container-highest: #353534;
+  
+  --color-on-surface: #e5e2e1;
+  --color-on-surface-variant: #c2c6d5;
+  --color-outline-variant: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.20);
+  
+  --color-error: #ffb4ab;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  
+  --font-sans: var(--font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-headline: var(--font-headline), "Space Grotesk", sans-serif;
+  --font-body: var(--font-body), "Inter", sans-serif;
+  --font-label: var(--font-label), "JetBrains Mono", monospace;
+  
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 4px;
+}
+
+:root {
+  --background: #0A0A0A;
+  --foreground: #e5e2e1;
+}
+
+body {
+  background-color: #0A0A0A;
+  color: #e5e2e1;
+  font-family: var(--font-body);
+}
+
+h1, .page-title {
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+h2, .section-header {
+  font-family: var(--font-headline);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-nav-item {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.card-title, .file-title {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.subtext, .page-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.metadata, .label, .mono, .stat-tag, .badge {
+  font-family: var(--font-label);
+  font-size: 11px;
+  text-transform: uppercase;
+  line-height: 1.25;
+}
+
+.glass-panel {
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* KPI / interactive cards get a subtle lift on hover */
+.card-interactive {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.chart-gradient {
+  background: linear-gradient(180deg, rgba(21, 92, 190, 0.15) 0%, rgba(21, 92, 190, 0) 100%);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #424752;
+  border-radius: 10px;
+}
+
+/* Material Symbols layout adjustment */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Compact Mode Spacing Overrides */
+body.compact .p-8 {
+  padding: 1rem !important;
+}
+body.compact .p-6 {
+  padding: 0.75rem !important;
+}
+body.compact .p-5 {
+  padding: 0.6rem !important;
+}
+body.compact .py-6 {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+body.compact .py-3 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+body.compact .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1rem !important;
+}
+body.compact .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.75rem !important;
+}
+body.compact .gap-6 {
+  gap: 0.75rem !important;
+}
+body.compact .gap-4 {
+  gap: 0.5rem !important;
+}
+
