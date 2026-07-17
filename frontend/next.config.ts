@@ -21,7 +21,7 @@ function resolveBackendUrl(): string {
     return raw;
   }
 
-  // Render's fromService.property: hostNoPort gives just the hostname — add https://
+  // Render's fromService.property: host returns just the hostname (e.g. creatoros-backend.onrender.com)
   return `https://${raw}`;
 }
 
