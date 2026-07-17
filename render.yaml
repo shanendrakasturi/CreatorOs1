@@ -7,12 +7,22 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: PORT
-        value: 8000
       - key: GROQ_API_KEY
-        sync: false # User will provide this in the Render dashboard
+        sync: false          # Enter in Render dashboard → Environment
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Automatically set to frontend URL for locked-down CORS in production
+      - key: FRONTEND_ORIGIN
+        fromService:
+          name: creatoros-frontend
+          type: web
+          property: host
 
   # ── Next.js Frontend (Node.js) ─────────────────────────────────────────────
+  # Single-domain deployment: all /api/* calls are proxied via Next.js rewrites
+  # to the backend service URL. No cross-origin requests from the browser.
   - type: web
     name: creatoros-frontend
     env: node
@@ -20,12 +30,15 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm run start
     envVars:
-      - key: NEXT_PUBLIC_API_URL
+      # Server-side only: used by next.config.ts resolveBackendUrl() at build/runtime.
+      # hostNoPort gives a clean hostname (no port suffix) so we can prepend https://.
+      - key: BACKEND_INTERNAL_URL
         fromService:
           name: creatoros-backend
           type: web
-          property: host
+          property: hostNoPort
+      # Browser-side Supabase client credentials
       - key: NEXT_PUBLIC_SUPABASE_URL
-        sync: false # User will provide this in the Render dashboard
+        sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
-        sync: false # User will provide this in the Render dashboard
+        sync: false

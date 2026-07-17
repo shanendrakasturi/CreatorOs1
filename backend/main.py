@@ -13,10 +13,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Policy configuration
+# ── CORS Policy ───────────────────────────────────────────────────────────────
+# In production (Render) set FRONTEND_ORIGIN to the frontend service URL,
+# e.g. https://creatoros-frontend.onrender.com
+# In dev it falls back to localhost:3000 (Next.js default dev port).
+_frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, lock down to the frontend origin (e.g. Vercel deployment domain)
+    allow_origins=[_frontend_origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
