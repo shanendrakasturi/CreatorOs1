@@ -31,12 +31,13 @@ services:
     startCommand: npm run start
     envVars:
       # Server-side only: used by next.config.ts resolveBackendUrl() at build/runtime.
-      # hostNoPort gives a clean hostname (no port suffix) so we can prepend https://.
+      # "host" is a valid Render Blueprint property and returns just the hostname
+      # (e.g. creatoros-backend.onrender.com). resolveBackendUrl() prepends https://.
       - key: BACKEND_INTERNAL_URL
         fromService:
           name: creatoros-backend
           type: web
-          property: hostNoPort
+          property: host
       # Browser-side Supabase client credentials
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
