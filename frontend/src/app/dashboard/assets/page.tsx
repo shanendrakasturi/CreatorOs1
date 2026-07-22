@@ -27,6 +27,7 @@ export default function AssetsPage() {
   const [selectedFolder, setSelectedFolder] = useState('All');
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Debounce the local search input
@@ -53,19 +54,23 @@ export default function AssetsPage() {
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     files.forEach(file => {
-      const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
-      const folder = isVideo ? 'Videos' : isImage ? 'Images' : 'Documents';
-      const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
-
-      addAsset({
-        name: file.name,
-        file_url: previewUrl || '#',
-        file_type: file.type,
-        size_bytes: file.size,
-        folder,
-        thumbnail_url: isImage ? previewUrl : null
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        const folder = isVideo ? 'Videos' : isImage ? 'Images' : 'Documents';
+        
+        addAsset({
+          name: file.name,
+          file_url: base64String,
+          file_type: file.type,
+          size_bytes: file.size,
+          folder,
+          thumbnail_url: isImage ? base64String : null
+        });
+      };
+      reader.readAsDataURL(file);
     });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -177,7 +182,11 @@ export default function AssetsPage() {
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filtered.map(asset => (
-                <div key={asset.id} className="glass-panel overflow-hidden group hover:scale-[1.02] transition-transform">
+                <div 
+                  key={asset.id} 
+                  onClick={() => setSelectedAsset(asset)}
+                  className="glass-panel overflow-hidden group hover:scale-[1.02] transition-transform cursor-pointer"
+                >
                   <div className="h-36 bg-surface-dim flex items-center justify-center relative">
                     {asset.thumbnail_url ? (
                       <img src={asset.thumbnail_url} alt={asset.name} className="w-full h-full object-cover" />
@@ -187,8 +196,11 @@ export default function AssetsPage() {
                       </span>
                     )}
                     <button
-                      onClick={() => deleteAsset(asset.id)}
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-black/60 text-error p-1 rounded-full transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteAsset(asset.id);
+                      }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-black/60 text-error p-1 rounded-full transition-all z-10"
                     >
                       <span className="material-symbols-outlined text-[14px]">delete</span>
                     </button>
@@ -214,7 +226,11 @@ export default function AssetsPage() {
                 </thead>
                 <tbody>
                   {filtered.map(asset => (
-                    <tr key={asset.id} className="border-b border-outline-variant/5 hover:bg-surface-container/20 group">
+                    <tr 
+                      key={asset.id} 
+                      onClick={() => setSelectedAsset(asset)}
+                      className="border-b border-outline-variant/5 hover:bg-surface-container/20 group cursor-pointer"
+                    >
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
                           <span className="material-symbols-outlined text-[20px] text-on-surface-variant">
@@ -228,7 +244,10 @@ export default function AssetsPage() {
                       <td className="px-5 py-3 text-on-surface-variant">{formatBytes(asset.size_bytes)}</td>
                       <td className="px-5 py-3 text-right">
                         <button
-                          onClick={() => deleteAsset(asset.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteAsset(asset.id);
+                          }}
                           className="text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -242,6 +261,119 @@ export default function AssetsPage() {
           )}
         </div>
       </div>
+
+      {/* Asset Preview Modal */}
+      {selectedAsset && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedAsset(null)} />
+
+          {/* Modal Container */}
+          <div className="relative w-full max-w-3xl glass-panel p-6 shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-200 flex flex-col md:flex-row gap-6 max-h-[90vh] overflow-y-auto">
+            {/* Left Side: Preview Area */}
+            <div className="flex-1 bg-surface-dim rounded-xl border border-outline-variant/20 flex items-center justify-center min-h-[300px] p-4 relative overflow-hidden">
+              {selectedAsset.file_url === '#' || !selectedAsset.file_url ? (
+                <div className="text-center p-6">
+                  <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-3 block">warning</span>
+                  <p className="text-sm font-bold text-white mb-1">Preview Unavailable</p>
+                  <p className="text-xs text-on-surface-variant max-w-[240px]">
+                    This is a seeded placeholder asset. Please upload your own files to preview them.
+                  </p>
+                </div>
+              ) : selectedAsset.file_type?.startsWith('image/') ? (
+                <img
+                  src={selectedAsset.file_url}
+                  alt={selectedAsset.name}
+                  className="max-h-[50vh] max-w-full rounded-lg object-contain"
+                />
+              ) : selectedAsset.file_type?.startsWith('video/') ? (
+                <video
+                  src={selectedAsset.file_url}
+                  controls
+                  className="max-h-[50vh] max-w-full rounded-lg"
+                />
+              ) : selectedAsset.file_type?.includes('pdf') ? (
+                <iframe
+                  src={selectedAsset.file_url}
+                  title={selectedAsset.name}
+                  className="w-full h-[50vh] rounded-lg border-0"
+                />
+              ) : (
+                <div className="text-center p-6">
+                  <span className="material-symbols-outlined text-5xl text-primary mb-3 block">insert_drive_file</span>
+                  <p className="text-sm font-bold text-white mb-1">File Preview Not Supported</p>
+                  <p className="text-xs text-on-surface-variant">
+                    You can download this file to view it on your device.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Right Side: Info Panel */}
+            <div className="w-full md:w-64 flex flex-col justify-between gap-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-base font-bold text-white font-headline line-clamp-2 pr-6">
+                    {selectedAsset.name}
+                  </h3>
+                  <button
+                    onClick={() => setSelectedAsset(null)}
+                    className="absolute top-4 right-4 p-1.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
+
+                <div className="border-t border-outline-variant/10 pt-4 space-y-3">
+                  <div>
+                    <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider block">Folder</span>
+                    <span className="text-xs font-semibold text-white mt-0.5 block">{selectedAsset.folder}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider block">Type</span>
+                    <span className="text-xs font-semibold text-white mt-0.5 block">{selectedAsset.file_type}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider block">Size</span>
+                    <span className="text-xs font-semibold text-white mt-0.5 block">{formatBytes(selectedAsset.size_bytes)}</span>
+                  </div>
+                  {selectedAsset.created_at && (
+                    <div>
+                      <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider block">Uploaded At</span>
+                      <span className="text-xs font-semibold text-white mt-0.5 block">
+                        {new Date(selectedAsset.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedAsset.file_url !== '#' && selectedAsset.file_url && (
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={selectedAsset.file_url}
+                    download={selectedAsset.name}
+                    className="w-full py-2.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg text-center active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">download</span>
+                    Download File
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedAsset.file_url);
+                      alert('File link copied to clipboard!');
+                    }}
+                    className="w-full py-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant/25 text-white text-xs font-bold rounded-lg text-center active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">link</span>
+                    Copy Share Link
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
